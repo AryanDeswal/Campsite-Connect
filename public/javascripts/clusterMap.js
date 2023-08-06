@@ -1,17 +1,19 @@
 mapboxgl.accessToken = mapToken;
 const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/light-v10',
-    center: [-103.59179687498357, 40.66995747013945],
+    container: 'cluster-map',
+    style: 'mapbox://styles/mapbox/light-v11',
+    center: [-103.5917, 40.6699],
     zoom: 3
 });
 
-n('load', function () {
+map.addControl(new mapboxgl.NavigationControl());
+
+map.on('load', () => {
     map.addSource('campgrounds', {
         type: 'geojson',
         data: campgrounds,
         cluster: true,
-        clusterMaxZoom: 14, 
+        clusterMaxZoom: 14,
         clusterRadius: 50 
     });
 
@@ -24,7 +26,7 @@ n('load', function () {
             'circle-color': [
                 'step',
                 ['get', 'point_count'],
-                '#00BCD4',
+                '#03A9F4',
                 10,
                 '#2196F3',
                 30,
@@ -48,7 +50,7 @@ n('load', function () {
         source: 'campgrounds',
         filter: ['has', 'point_count'],
         layout: {
-            'text-field': '{point_count_abbreviated}',
+            'text-field': ['get', 'point_count_abbreviated'],
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12
         }
@@ -67,14 +69,14 @@ n('load', function () {
         }
     });
 
-    map.on('click', 'clusters', function (e) {
+    map.on('click', 'clusters', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
             layers: ['clusters']
         });
         const clusterId = features[0].properties.cluster_id;
         map.getSource('campgrounds').getClusterExpansionZoom(
             clusterId,
-            function (err, zoom) {
+            (err, zoom) => {
                 if (err) return;
 
                 map.easeTo({
@@ -85,9 +87,10 @@ n('load', function () {
         );
     });
 
-    map.on('click', 'unclustered-point', function (e) {
-        const { popUpMarkup } = e.features[0].properties;
+    map.on('click', 'unclustered-point', (e) => {
         const coordinates = e.features[0].geometry.coordinates.slice();
+        const { popUpMarkup } = e.features[0].properties;
+
         while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
         }
@@ -98,10 +101,10 @@ n('load', function () {
             .addTo(map);
     });
 
-    map.on('mouseenter', 'clusters', function () {
+    map.on('mouseenter', 'clusters', () => {
         map.getCanvas().style.cursor = 'pointer';
     });
-    map.on('mouseleave', 'clusters', function () {
+    map.on('mouseleave', 'clusters', () => {
         map.getCanvas().style.cursor = '';
     });
 });

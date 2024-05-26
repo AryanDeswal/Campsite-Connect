@@ -1,4 +1,4 @@
-# Campsite Connect
+# Campsite Connect 
 
 ## Overview
 Campsite Connect is a web application designed to enhance the camping experience by providing a platform for users to list, review, and rate campsites. Built with Node.js, Express.js, Bootstrap, and MongoDB, Campsite Connect offers seamless CRUD (Create, Read, Update, Delete) operations to facilitate user engagement and interaction with campsite data.

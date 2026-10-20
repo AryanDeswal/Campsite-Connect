@@ -1,74 +1,141 @@
-# Campsite Connect 
+# Campsite Connect
 
-## Overview
-Campsite Connect is a web application designed to enhance the camping experience by providing a platform for users to list, review, and rate campsites. Built with Node.js, Express.js, Bootstrap, and MongoDB, Campsite Connect offers seamless CRUD (Create, Read, Update, Delete) operations to facilitate user engagement and interaction with campsite data.
+A full-stack web app for listing, reviewing and rating campgrounds, with photo uploads and an interactive cluster map.
+
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?logo=bootstrap&logoColor=white)
+![Mapbox](https://img.shields.io/badge/Mapbox-000000?logo=mapbox&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?logo=cloudinary&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+**Live demo:** https://campsiteconnect.onrender.com
+
+## About
+
+Campsite Connect lets people share campgrounds and help others find good places to stay. Signed-in users can add a campground with a price, description, location and photos; the location is geocoded with Mapbox and shown on a map. Other users can leave a 1 to 5 star rating and a written review. It is a server-rendered Express app using EJS templates, MongoDB for storage and Cloudinary for images.
 
 ## Features
 
-- **User Authentication**: Utilizes Passport for secure user authentication, ensuring that only authorized users can access the platform.
-  
-- **Interactive Map**: Integrated Mapbox SDK to provide users with an interactive global map, allowing them to explore campsites visually.
+- **Authentication** with Passport (local strategy) and `passport-local-mongoose`: register, log in, log out, and return to the page you were on after logging in.
+- **Campground CRUD**: create, view, edit and delete campgrounds. Only the author can edit or delete a campground.
+- **Image uploads** to Cloudinary via Multer (JPEG/PNG, multiple images per campground), with the option to delete selected images when editing.
+- **Geocoding and maps**: locations are converted to coordinates with the Mapbox Geocoding API. The index page shows all campgrounds on a clustered Mapbox GL map; each campground page shows its own map.
+- **Reviews and star ratings** (Starability). Only the review's author can delete it.
+- **Validation** on the client (Bootstrap form validation) and server (Joi schemas with an HTML-sanitizing extension).
+- **Security middleware**: Helmet, `express-mongo-sanitize` against query injection, and sessions stored in MongoDB with `connect-mongo`.
+- **Flash messages** and a custom error page for unknown routes and errors.
 
-- **CRUD Operations**: Enables users to perform CRUD operations on campsites, empowering them to add new campsites, view existing ones, update campsite information, and delete outdated entries.
+## Tech Stack
 
-- **Data Validation**: Implements robust client and server-side data validation using Bootstrap, JOI Library, and Mongoose middleware, ensuring data integrity and reliability.
+| Layer     | Technology                                                       |
+| --------- | ---------------------------------------------------------------- |
+| Runtime   | Node.js                                                          |
+| Server    | Express 4, express-session, connect-flash, method-override, Helmet |
+| Auth      | Passport, passport-local, passport-local-mongoose                |
+| Database  | MongoDB with Mongoose 7, connect-mongo (session store)           |
+| Views     | EJS with ejs-mate layouts, Bootstrap 5                           |
+| Media     | Cloudinary, Multer, multer-storage-cloudinary                    |
+| Maps      | Mapbox SDK (geocoding), Mapbox GL JS                             |
+| Validation| Joi, sanitize-html                                               |
 
-## Technologies Used
+## Project Structure
 
-- **Node.js**: A JavaScript runtime used for building scalable and efficient server-side applications.
-  
-- **Express.js**: A minimalist web framework for Node.js used to build the web application and handle HTTP requests.
+```
+Campsite-Connect/
+├── app.js              # App setup: DB, sessions, Passport, middleware, routes
+├── middleware.js       # isLoggedIn, isAuthor, isReviewAuthor, Joi validators
+├── schemas.js          # Joi schemas for campgrounds and reviews
+├── cloudinary/
+│   └── index.js        # Cloudinary config and Multer storage
+├── controllers/        # Route handlers: campgrounds, reviews, users
+├── models/             # Mongoose models: Campground, Review, User
+├── routes/             # Express routers: campgrounds, reviews, users
+├── utils/              # ExpressError class and catchAsync wrapper
+├── views/              # EJS templates (layouts, partials, campgrounds, users)
+└── public/
+    ├── javascripts/    # Cluster map, show-page map, form validation
+    └── stylesheets/    # App, home page and star rating styles
+```
 
-- **MongoDB**: A NoSQL database used for storing and managing campsite data.
+## Getting Started
 
-- **Passport**: An authentication middleware used for user authentication and session management.
+### Prerequisites
 
-- **Mapbox SDK**: Provides mapping and location services, used to create an interactive map for visualizing campsites.
+- [Node.js](https://nodejs.org/) and npm
+- A MongoDB instance (local or MongoDB Atlas)
+- A [Cloudinary](https://cloudinary.com/) account
+- A [Mapbox](https://www.mapbox.com/) access token
 
-- **Bootstrap**: A front-end framework used for designing responsive and visually appealing user interfaces.
+### Installation
 
-- **JOI Library**: A schema validation library for JavaScript used for validating and sanitizing user input data.
+```bash
+git clone https://github.com/AryanDeswal/Campsite-Connect.git
+cd Campsite-Connect
+npm install
+```
 
-- **Mongoose**: An object modeling tool for MongoDB and Node.js, used for data modeling and interacting with the MongoDB database.
+### Environment Variables
 
-## Installation
+Create a `.env` file in the project root. It is loaded with `dotenv` when `NODE_ENV` is not `production`.
 
-1. Clone the repository:
+| Variable                | Purpose                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `DB_URL`                | MongoDB connection string. Defaults to `mongodb://127.0.0.1:27017/campsite-connect`.    |
+| `SECRET`                | Secret for signing and encrypting sessions. Has an insecure fallback, so always set it. |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name                                                                   |
+| `CLOUDINARY_KEY`        | Cloudinary API key                                                                      |
+| `CLOUDINARY_SECRET`     | Cloudinary API secret                                                                   |
+| `MAPBOX_TOKEN`          | Mapbox access token, used for geocoding and for the maps in the browser                 |
 
-   ```
-   git clone https://github.com/AryanDeswal/Campsite-Connect.git
-   ```
+### Run
 
-2. Navigate to the project directory:
+```bash
+npm start
+```
 
-   ```
-   cd campsite-connect
-   ```
+Then open http://localhost:3000. The port is fixed at 3000 in `app.js`.
 
-3. Install dependencies:
+For development with auto-reload, `nodemon` is included as a dev dependency:
 
-   ```
-   npm install
-   ```
+```bash
+npx nodemon app.js
+```
 
-4. Set up environment variables:
+## Routes
 
-   - Create a `.env` file in the root directory.
-   - Add the following environment variables:
+### Users
 
-     ```
-     CLOUDINARY_CLOUD_NAME
-     CLOUDINARY_KEY
-     CLOUDINARY_SECRET
-     DB_URL
-     MAPBOX_TOKEN
-     SECRET
-     ```
+| Method | Route       | Description                       |
+| ------ | ----------- | --------------------------------- |
+| GET    | `/register` | Registration form                 |
+| POST   | `/register` | Create an account and log in      |
+| GET    | `/login`    | Login form                        |
+| POST   | `/login`    | Log in with username and password |
+| GET    | `/logout`   | Log out                           |
 
-5. Start the server:
+### Campgrounds
 
-   ```
-   npm start
-   ```
+| Method | Route                  | Description                                 | Access          |
+| ------ | ---------------------- | ------------------------------------------- | --------------- |
+| GET    | `/campgrounds`         | List all campgrounds with the cluster map   | Public          |
+| GET    | `/campgrounds/new`     | New campground form                         | Logged in       |
+| POST   | `/campgrounds`         | Create a campground (with image uploads)    | Logged in       |
+| GET    | `/campgrounds/:id`     | Campground details, map and reviews         | Public          |
+| GET    | `/campgrounds/:id/edit`| Edit form                                   | Author only     |
+| PUT    | `/campgrounds/:id`     | Update a campground, add or remove images   | Author only     |
+| DELETE | `/campgrounds/:id`     | Delete a campground and its reviews         | Author only     |
 
-6. Open a web browser and visit `http://localhost:3000` to access Campsite Connect.
+### Reviews
+
+| Method | Route                                   | Description     | Access          |
+| ------ | --------------------------------------- | --------------- | --------------- |
+| POST   | `/campgrounds/:id/reviews`              | Add a review    | Logged in       |
+| DELETE | `/campgrounds/:id/reviews/:reviewId`    | Delete a review | Review author   |
+
+PUT and DELETE are sent from HTML forms using `method-override` (`?_method=PUT` / `?_method=DELETE`).
+
+## License
+
+Released under the [MIT License](LICENSE).
